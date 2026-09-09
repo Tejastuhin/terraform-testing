@@ -9,6 +9,10 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    defaults: 
+      run:
+        working-directory: dockerfile-demo/full-project-docker
+
     steps:
       - name: Get the code
         uses: actions/checkout@v4
