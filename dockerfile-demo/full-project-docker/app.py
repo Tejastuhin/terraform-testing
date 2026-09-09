@@ -6,7 +6,7 @@ app = Flask(__name__)
 connection = psycopg.connect(
     host = os.getenv("DB_HOST"),
     port=5432,
-    user = os.getenv("POSTGRES_USER")
+    user = os.getenv("POSTGRES_USER"),
     password = os.getenv("POSTGRES_PASSWORD"),
     dbname = os.getenv("POSTGRES_DB")
 )
