@@ -42,3 +42,41 @@ jobs:
 
       - name: Push Docker image
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/flask-app:latest
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            sudo docker pull tejastuhin/flask-app:latest
+
+            sudo docker stop flask-app || true
+            sudo docker rm flask-app || true
+
+            sudo docker stop postgres-db || true
+            sudo docker rm postgres-db || true
+
+            sudo docker network create flask-network || true
+
+            sudo docker volume create postgres-data || true
+
+            sudo docker run -d \
+              --name postgres-db \
+              --network flask-network \
+              -e POSTGRES_USER=postgres \
+              -e POSTGRES_PASSWORD=mypassword \
+              -e POSTGRES_DB=postgres \
+              -v postgres-data:/var/lib/postgresql \
+              postgres
+
+            sudo docker run -d \
+              --name flask-app \
+              --network flask-network \
+              -p 80:8000 \
+              -e DB_HOST=postgres-db \
+              -e POSTGRES_USER=postgres \
+              -e POSTGRES_PASSWORD=mypassword \
+              -e POSTGRES_DB=postgres \
+              tejastuhin/flask-app:latest
